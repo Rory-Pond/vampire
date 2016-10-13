@@ -557,6 +557,61 @@ void check_for_valid_vector(std::vector<double>& u, /// unit vector
    return;
 
 }
+
+
+///
+/// Function to open file in parrallel 
+///
+std::string GetString(std::string const filename){
+
+   const int root = 0;
+
+   int len;
+   std::string contents;
+
+   //Read in file on root
+   if (vmpi::my_rank == root) {
+
+      // ifstream declaration
+      std::ifstream inputfile;
+
+      // Open file read only
+      inputfile.open(filename.c_str());
+
+      // Check for opening
+      if(!inputfile.is_open()){
+         terminaltextcolor(RED);
+         std::cerr << "Error opening input file \"" << filename << "\". File does not exist!" << std::endl;
+         terminaltextcolor(WHITE);
+         zlog << zTs() << "Error: Input file \"" << filename << "\" cannot be opened or does not exist." << std::endl;
+         zlog << zTs() << "If file exists then check file permissions to ensure it is readable by the user." << std::endl;
+         err::vexit();   // return to calling function for error checking or message
+    }
+    std::string temp((std::istreambuf_iterator<char>(inputfile)),
+                      std::istreambuf_iterator<char>());
+    len = temp.length();
+    contents = temp;
+   }
+   #ifdef MPICF
+      MPI_Bcast(&len, 1, MPI_INT, root, MPI_COMM_WORLD);
+   #endif
+   std::vector<char> message;
+
+   if (vmpi::my_rank == root)
+   {
+      std::copy(contents.begin(), contents.end(), std::back_inserter(message));
+   }
+   message.resize(len);
+
+   #ifdef MPICF
+   MPI_Bcast(&message[0], message.size(), MPI_CHAR, root, MPI_COMM_WORLD);
+   #endif
+
+   std::string str(message.begin(),message.end());
+   return str;
+}
+
+
 /// @brief Function to read in variables from a file.
 ///
 /// @section License
@@ -577,24 +632,11 @@ void check_for_valid_vector(std::vector<double>& u, /// unit vector
 ///=====================================================================================
 ///
 int read(string const filename){
-	// ifstream declaration
-	std::ifstream inputfile;
-
 	// Print informative message to zlog file
 	zlog << zTs() << "Opening main input file \"" << filename << "\"." << std::endl;
 
-	// Open file read only
-	inputfile.open(filename.c_str());
-
-	// Check for opening
-	if(!inputfile.is_open()){
-	  terminaltextcolor(RED);
-	  std::cerr << "Error opening main input file \"" << filename << "\". File does not exist!" << std::endl;
-	  terminaltextcolor(WHITE);
-	  zlog << zTs() << "Error: Main input file \"" << filename << "\" cannot be opened or does not exist." << std::endl;
-	  zlog << zTs() << "If file exists then check file permissions to ensure it is readable by the user." << std::endl;
-	  err::vexit();   // return to calling function for error checking or message
-	}
+   std::stringstream inputfile;
+   inputfile.str (GetString(filename.c_str()));
 
         // Print informative message to zlog file
 	zlog << zTs() << "Parsing system parameters from main input file." << std::endl;
@@ -712,8 +754,6 @@ int read(string const filename){
 		}
 		}
 	}
-	// Close file
-	inputfile.close();
 
 	return EXIT_SUCCESS;
 }
@@ -2778,8 +2818,6 @@ int match_vout_grain_list(string const word, string const value, int const line,
 
 int read_mat_file(std::string const matfile, int const LineNumber){
 
-	// Declare input stream
-	std::ifstream inputfile;
 
 	// resize temporary materials array for storage of variables
 	read_material.resize(mp::max_materials);
@@ -2789,17 +2827,8 @@ int read_mat_file(std::string const matfile, int const LineNumber){
 	zlog << zTs() << "Opening material file \"" << matfile << "\"." << std::endl;
 
 	// Open file read only
-	inputfile.open(matfile.c_str());
-
-	// Check for opening
-	if(!inputfile.is_open()){
-		terminaltextcolor(RED);
-		std::cerr << "Error opening material file " << matfile << ". File does not exist!" << std::endl;
-		terminaltextcolor(WHITE);
-		zlog << zTs() << "Error: Material file \"" << matfile << "\" on line number " << LineNumber << " of input file cannot be opened or does not exist." << std::endl;
-		zlog << zTs() << "If file exists then check file permissions to ensure it is readable by the user." << std::endl;
-		err::vexit();   // return to calling function for error checking or message
-	}
+   std::stringstream inputfile;
+   inputfile.str (GetString(matfile.c_str()));
 	//-------------------------------------------------------
 	// Material 0
 	//-------------------------------------------------------
@@ -2992,10 +3021,6 @@ int read_mat_file(std::string const matfile, int const LineNumber){
 
 	// Resize read array to zero
 	read_material.resize(0);
-
-
-	// Close file
-	inputfile.close();
 
 	return EXIT_SUCCESS;
 
