@@ -215,6 +215,9 @@ namespace sim{
    extern double mc_statistics_moves;
    extern double mc_statistics_reject;
 
+   // Domain Wall Generation
+   
+
 }
 
 namespace cmc{

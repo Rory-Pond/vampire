@@ -30,30 +30,31 @@
 //==========================================================
 namespace program
 {
-	// program functions
-	extern int bmark();
-	extern void time_series();
-	extern int hysteresis();
-	extern int static_hysteresis();
+   // program functions
+   extern int bmark();
+   extern void time_series();
+   extern int hysteresis();
+   extern int static_hysteresis();
    extern void partial_hysteresis_loop();
-	extern int curie_temperature();
-	extern void field_cool();
-	extern void temperature_pulse();
-	extern void hamr();
-	extern void cmc_anisotropy();
-	extern void hybrid_cmc();
+   extern int curie_temperature();
+   extern void field_cool();
+   extern void temperature_pulse();
+   extern void hamr();
+   extern void cmc_anisotropy();
+   extern void hybrid_cmc();
    extern void reverse_hybrid_cmc();
    extern void lagrange_multiplier();
    extern void localised_temperature_pulse();
    extern void effective_damping();
    extern void fmr();
+   extern void domainwall_motion();
 
-	// Sundry programs and diagnostics not under general release
-	extern int LLB_Boltzmann();
-	extern int timestep_scaling();
-	extern void boltzmann_dist();
-        extern void setting_process();
-	
+   // Sundry programs and diagnostics not under general release
+   extern int LLB_Boltzmann();
+   extern int timestep_scaling();
+   extern void boltzmann_dist();
+      extern void setting_process();
+
 }
 
 #endif /*PROGRAM_H_*/
